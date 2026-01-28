@@ -27,24 +27,28 @@ jobs:
           #### Target OS Platforms and Architectures ####
           ###############################################
 
-          ## Windows Platforms ##
+          # Windows x64 MSIX ##
           - os: windows-latest
-            arch: x86
+            host: windows
+            arch: win64_msvc2022_64
             output: .msix
-        #   - os: windows-latest
-        #     arch: x86
-        #     output: .msi
-        #   - os: windows-latest
-        #     arch: x64
+
+            ## Windows x64 MSI ##
+          - os: windows-latest
+            host: windows
+            arch: win64_msvc2022_64
+            output: .msi
+
+        #   ## Windows ARM64 MSIX ##
+        #   - os: windows-2022-arm64
+        #     host: windows_arm64
+        #     arch: win64_msvc2022_arm64
         #     output: .msix
-        #   - os: windows-latest
-        #     arch: x64
-        #     output: .msi
-        #   - os: windows-latest
-        #     arch: arm64
-        #     output: .msix
-        #   - os: windows-latest
-        #     arch: arm64
+
+        #   ## Windows ARM64 MSIX ##
+        #   - os: windows-2022-arm64
+        #     host: windows_arm64
+        #     arch: win64_msvc2022_arm64
         #     output: .msi
 
         #   ## macOS Platforms ##
@@ -88,12 +92,11 @@ jobs:
 
       ## Install Qt6 for Windows ##
       - name: Install Qt (Windows)
-        if: runner.os == 'Windows'
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.10.0'
-          host: 'windows'
-          target: 'desktop'
+          host: ${{ matrix.host }}
+          target: desktop
           arch: ${{ matrix.arch }}
 
     #   ## Install Qt6 for macOS ##
@@ -135,13 +138,13 @@ jobs:
           cpack -G NSIS -C Release
           # Or use MSIX packaging tools
 
-    #   ## Package MSI for Windows ##
-    #   - name: Package (Windows MSI)
-    #     if: runner.os == 'Windows' && matrix.output == '.msi'
-    #     run: |
-    #       # You'll need WiX toolset or use cpack
-    #       cpack -G WIX -C Release
-    #       # Output will be in build/ directory
+      ## Package MSI for Windows ##
+      - name: Package (Windows MSI)
+        if: runner.os == 'Windows' && matrix.output == '.msi'
+        run: |
+          # You'll need WiX toolset or use cpack
+          cpack -G WIX -C Release
+          # Output will be in build/ directory
 
     #   ## Package DMG for macOS ##
     #   - name: Package (macOS DMG)
