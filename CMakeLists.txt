@@ -72,8 +72,13 @@ endif()
 ## Add Source Files ##
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/main.cpp")
 
-## Generate Binary Files in Bin Directory ##
+## Set the Output Binary Files Directory ##
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+
+# Set the Output Binary Files Directory for Multi-Config Outputs ##
+foreach(CONFIG Release Debug RelWithDebInfo MinSizeRel)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG} "${CMAKE_SOURCE_DIR}/bin/${CONFIG}")
+endforeach()
 
 ## Generate OS-Specific 2048 Application Executable ##
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -84,8 +89,12 @@ target_link_libraries(${PROJECT_NAME} Qt6::Core Qt6::Gui Qt6::Widgets)
 ## Output Binaries to Bin Directory ##
 if(WIN32)
     find_program(WINDEPLOYQT_EXECUTABLE windeployqt REQUIRED)
+    # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    #     COMMAND "${WINDEPLOYQT_EXECUTABLE}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.exe"
+    #     COMMENT "Deploying Qt Dependencies to Output Directory..."
+    # )
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND "${WINDEPLOYQT_EXECUTABLE}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}.exe"
+        COMMAND "${WINDEPLOYQT_EXECUTABLE}" "$<TARGET_FILE:${PROJECT_NAME}>"
         COMMENT "Deploying Qt Dependencies to Output Directory..."
     )
 endif()
