@@ -156,11 +156,17 @@ jobs:
         run: |
           productbuild --component ./build/MyApp.app /Applications MyApp-${{ matrix.arch }}.pkg
 
+      ## Install FPM for Linux Packages ##
+      - name: Install fpm
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install -y ruby ruby-dev
+          sudo gem install fpm
+
       ## Package DEB for Linux ##
       - name: Package (Linux DEB)
         if: runner.os == 'Linux' && matrix.package == 'deb'
         run: |
-          sudo apt-get install -y fpm
           fpm -s dir -t deb \
             -n myapp \
             -v 1.0.0 \
@@ -172,7 +178,6 @@ jobs:
       - name: Package (Linux RPM)
         if: runner.os == 'Linux' && matrix.package == 'rpm'
         run: |
-          sudo apt-get install -y fpm
           fpm -s dir -t rpm \
             -n myapp \
             -v 1.0.0 \
