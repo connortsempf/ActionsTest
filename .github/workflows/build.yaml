@@ -34,9 +34,9 @@ jobs:
         #   - os: windows-latest
         #     arch: x86
         #     output: .msi
-          - os: windows-latest
-            arch: x64
-            output: .msix
+        #   - os: windows-latest
+        #     arch: x64
+        #     output: .msix
         #   - os: windows-latest
         #     arch: x64
         #     output: .msi
@@ -89,7 +89,7 @@ jobs:
       ## Install Qt6 for Windows ##
       - name: Install Qt (Windows)
         if: runner.os == 'Windows'
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           version: '6.10.0'
           host: 'windows'
