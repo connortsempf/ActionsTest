@@ -1,0 +1,188 @@
+name: Build Releases
+
+
+
+
+################################
+#### Define Release Trigger ####
+################################
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+
+
+
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+
+          ###############################################
+          #### Target OS Platforms and Architectures ####
+          ###############################################
+
+          ## Windows Platforms ##
+          - os: windows-latest
+            arch: x86
+            output: .msix
+          - os: windows-latest
+            arch: x86
+            output: .msi
+          - os: windows-latest
+            arch: x64
+            output: .msix
+          - os: windows-latest
+            arch: x64
+            output: .msi
+          - os: windows-latest
+            arch: arm64
+            output: .msix
+          - os: windows-latest
+            arch: arm64
+            output: .msi
+
+          ## macOS Platforms ##
+          - os: macos-latest
+            arch: x86_64
+            output: .dmg
+          - os: macos-latest
+            arch: x86_64
+            output: .pkg
+          - os: macos-latest
+            arch: arm64
+            output: .dmg
+          - os: macos-latest
+            arch: arm64
+            output: .pkg
+
+          ## Linux Platforms ##
+          - os: ubuntu-latest
+            arch: amd64
+            package: deb
+          - os: ubuntu-latest
+            arch: x86_64
+            package: rpm
+          - os: ubuntu-latest
+            arch: arm64
+            package: deb
+          - os: ubuntu-latest
+            arch: aarch64
+            package: rpm
+
+
+    runs-on: ${{ matrix.os }}
+
+
+    steps:
+      - uses: actions/checkout@v4
+
+      ##################################
+      #### Install Qt6 Dependencies ####
+      ##################################
+
+      ## Install Qt6 for Windows ##
+      - name: Install Qt (Windows)
+        if: runner.os == 'Windows'
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.x'
+          host: 'windows'
+          target: 'desktop'
+          arch: ${{ matrix.arch }}
+
+      ## Install Qt6 for macOS ##
+      - name: Install Qt (macOS)
+        if: runner.os == 'macOS'
+        run: brew install qt cmake
+
+      ## Install Qt6 for Linux ##
+      - name: Install Qt (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y qt6-base-dev qt6-tools-dev cmake
+
+
+
+
+      #################################
+      #### Build Source with CMake ####
+      #################################
+
+      ## Build with CMake ##
+      - name: Configure CMake
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release
+
+
+
+
+      #################################
+      #### Package the Application ####
+      #################################
+
+      ## Package MSIX for Windows ##
+      - name: Package (Windows MSIX)
+        if: runner.os == 'Windows' && matrix.output == '.msix'
+        run: |
+          cpack -G NSIS -C Release
+          # Or use MSIX packaging tools
+
+      ## Package MSI for Windows ##
+      - name: Package (Windows MSI)
+        if: runner.os == 'Windows' && matrix.output == '.msi'
+        run: |
+          # You'll need WiX toolset or use cpack
+          cpack -G WIX -C Release
+          # Output will be in build/ directory
+
+      ## Package DMG for macOS ##
+      - name: Package (macOS DMG)
+        if: runner.os == 'macOS' && matrix.output == '.dmg'
+        run: |
+          brew install create-dmg
+          create-dmg 'MyApp' MyApp-${{ matrix.arch }}.dmg ./build/MyApp.app
+
+      ## Package PKG for macOS ##
+      - name: Package (macOS PKG)
+        if: runner.os == 'macOS' && matrix.output == '.pkg'
+        run: |
+          productbuild --component ./build/MyApp.app /Applications MyApp-${{ matrix.arch }}.pkg
+
+      ## Package DEB for Linux ##
+      - name: Package (Linux DEB)
+        if: runner.os == 'Linux' && matrix.package == 'deb'
+        run: |
+          sudo apt-get install -y fpm
+          fpm -s dir -t deb \
+            -n myapp \
+            -v 1.0.0 \
+            -a ${{ matrix.arch }} \
+            -C build \
+            ./MyApp=/usr/local/bin/
+
+      ## Package RPM for Linux ##
+      - name: Package (Linux RPM)
+        if: runner.os == 'Linux' && matrix.package == 'rpm'
+        run: |
+          sudo apt-get install -y fpm
+          fpm -s dir -t rpm \
+            -n myapp \
+            -v 1.0.0 \
+            -a ${{ matrix.arch }} \
+            -C build \
+            ./MyApp=/usr/local/bin/
+
+      ## Upload Artifacts ##
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.os }}-${{ matrix.arch }}
+          path: build/*

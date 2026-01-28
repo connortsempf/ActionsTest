@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0.0
+Type=Application
+Name=TestApp
+Comment=A test application
+Exec=TestApp
+Icon=TestApp
+Categories=Game;
+Terminal=false
+StartupNotify=true

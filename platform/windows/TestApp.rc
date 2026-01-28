@@ -1,0 +1,28 @@
+#include <windows.h>
+
+IDI_ICON1 ICON "TestApp.ico"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     1,0,0,0
+PRODUCTVERSION  1,0,0,0
+
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName",      "TestApp"
+            VALUE "FileDescription",  "TestApp - A number combining board game"
+            VALUE "FileVersion",      "1.0.0.0"
+            VALUE "InternalName",     "TestApp"
+            VALUE "LegalCopyright",   "Connor Sempf 2026. TestApp concept game clone from the popular game TestApp."
+            VALUE "OriginalFilename", "TestApp.exe"
+            VALUE "ProductName",      "TestApp"
+            VALUE "ProductVersion",   "1.0.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
